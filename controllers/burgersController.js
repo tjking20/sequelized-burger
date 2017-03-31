@@ -1,42 +1,41 @@
 var express = require("express");
 var router = express.Router();
+var models = require("../models")
 
-var burger = require("../models/burger.js")
 
-router.get("/", function(req, res){
-	// res.send("hi")
-	burger.all(function(data){
-		var hbsObject = {
-			burgers: data
-		};
-		// res.send(hbsObject);
-		console.log(hbsObject);
-		res.render("index", hbsObject)
-	});
-});
-
-router.post("/create", function(req, res){
-	// res.send('hi') wokrs
-	// res.send(req.body.burgerName) works
-	burger.create([
-    "burger_name"
-    ], [
-    req.body.burgerName
-  ], function() {
-    res.redirect("/");
+//finds all burgers in database
+router.get('/', function(req, res) {
+	models.burger.findAll({
+  }).then(function(burgers){
+    res.render('index', {
+    	burgers: burgers
+    });
   });
 });
 
-router.put("/devour/:id", function(req, res){
-	var condition = "id = " + req.params.id;
-	// res.send("hi") works
-	burger.update({
-		devoured: true
-	}, condition, function(){
-		res.redirect("/");
-	});
-})
-//still need post and put
+//adds new burger to order up column
+router.post('/create', function(req, res) {
+  // console.log(req.body);
+  models.burger.create({
+    burger_name: req.body.burgerName     
+  }).then(function() {
+    res.redirect('/');
+  });
+});
+
+
+//updates burger, changing devoured to true(switching columns)
+router.put('/devour/:id', function(req, res) {
+  models.burger.update({
+    devoured: true
+  },
+  {
+  	where: {id : req.params.id}
+  }).then(function(){
+  	res.redirect('/')
+  })
+});
+
 
 module.exports = router;
 
